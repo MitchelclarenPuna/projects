@@ -119,7 +119,7 @@ def filter_cache(image_bytes: bytes, filter_name: str) -> Optional[np.ndarray]:
     if filter_name == "Normal":
         return filt_img.copy()
     if filter_name == "Blur":
-        return cv2.GaussianBlur(filt_img, (8, 8,), 0)
+        return cv2.GaussianBlur(filt_img, (15, 15,), 0)
     if filter_name == "Sharpen":
         kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
         return cv2.filter2D(filt_img, -1, kernel)
