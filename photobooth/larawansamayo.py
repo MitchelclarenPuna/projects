@@ -320,97 +320,18 @@ if page == "Photobooth":
             strip_title = st.text_input("Title", value="Larawan sa Mayo")
             footer_text = st.text_input("Footer", value="From your lens")
 
-            submitted = st.form_submit_button("Apply", use_container_width=True)
+            submitted = st.form_submit_button("Apply Settings", use_container_width=True)
 
         if st.button("Reset All Photos", use_container_width=True, type="secondary"):
             reset_photos()
             st.success("All saved photos have been cleared.")
             st.rerun()
-            
-            #inputs
-            if source == "Camera":
-                cam_key = f"cam_input_{len(st.session_state.photos)}"
-                uploaded_source = st.camera_input("Capture the moment", key=cam_key)
-            else:
-                uploaded_source = st.file_uploader(
-            "Upload an image",
-            type=["jpg", "jpeg", "png"],
-            key="file_upload"
-            )
-                
-                if uploaded_source is not None:
-                    current_file_bytes = uploaded_source.getvalue()
-    
-                    current_preview = okimgs_cur(
-                    current_file_bytes,
-                    filter_options,
-                    brightness,
-                    ontrast,
-                    text,
-                )
-                    
-                    if current_preview is not None:
-                        st.subheader("Preview")
-                        st.image(current_preview, use_container_width=True)
-        
-                        st.info(f"Shots saved: {len(st.session_state.photos)} / {no_shots}")
-                        
-                        if len(st.session_state.photos) < no_shots:
-                            if st.button(f"Save Shot {len(st.session_state.photos) + 1}", use_container_width=True):
-                                st.session_state.photos.append(current_preview.copy())
-                                st.success("Shot saved successfully!")
-                                st.rerun()
-                            else:
-                                st.warning("You have reached the limit. Scroll down to see your final strip!")
-                                
-                                
-                                if len(st.session_state.photos) == no_shots:
-                                    with st.spinner("Stitching the look..."):
-                                        photo_bytes = tuple(img_convert(photos) for photos in st.session_state.photos)
-                                        fin_look = fstrip(
-                                            photo_bytes,
-                                            strip_title=strip_title,
-                                            footer_text=footer_text,
-                                            template_name=template_name,
-                                        )
-        
-                                        st.subheader("Final Look")
-                                        st.image(fin_look, use_container_width=True)
-                                        st.success("Behold! Your best angles.")
-        
-                                        import io
-                                        st.divider()
-                                        dl_format = st.radio("Download format", ["PNG", "JPEG"], horizontal=True)
 
-                                        buf = io.BytesIO()
-                                        if dl_format == "PNG":
-                                            file_name = "larawan_sa_mayo.png"
-                                            mime = "image/png"
-                                            fin_look.save(buf, format="PNG")
-                                        else:
-                                            file_name = "larawan_sa_mayo.jpg"
-                                            mime = "image/jpeg"
-                                            if fin_look.mode in ("RGBA", "P"):
-                                                fin_look = fin_look.convert("RGB")
-                                                fin_look.save(buf, format="JPEG")
-        
-                                                file_data = buf.getvalue()
-
-                                                st.download_button(
-                                                label=f"Download as {dl_format}",
-                                                data=file_data, 
-                                                file_name=file_name,
-                                                mime=mime,
-                                                use_container_width=True,
-                                            )
-                                            else:
-                                                st.warning(f"Save your {no_shots} best looks to see them all together.")
-            
-                                            st.divider()
-                                            st.markdown("### Preview your vibe")
-                                            chosen_tmp = templates[template_name]
-                                            st.write(f"**Background:** `{chosen_tmp['bg_color']}`")
-                                            st.write(f"**Frame size:** `{chosen_tmp['frame_width']}px` × `{chosen_tmp['frame_height']}px`")
+        st.divider()
+        st.markdown("### Preview your vibe")
+        chosen_tmp = templates[template_name]
+        st.write(f"**Background:** `{chosen_tmp['bg_color']}`")
+        st.write(f"**Frame size:** `{chosen_tmp['frame_width']}px` × `{chosen_tmp['frame_height']}px`")
 
 #my about page section
 else:
@@ -438,3 +359,82 @@ else:
     """)
     
     st.info("Version 1.0.0 | Developed in 2026")
+
+#inputs
+if source == "Camera":
+    cam_key = f"cam_input_{len(st.session_state.photos)}"
+    uploaded_source = st.camera_input("Capture the moment", key=cam_key)
+else:
+    uploaded_source = st.file_uploader(
+        "Upload an image",
+        type=["jpg", "jpeg", "png"],
+        key="file_upload"
+    )
+
+if uploaded_source is not None:
+    current_file_bytes = uploaded_source.getvalue()
+    
+    current_preview = okimgs_cur(
+        current_file_bytes,
+        filter_options,
+        brightness,
+        contrast,
+        text,
+    )
+
+    if current_preview is not None:
+        st.subheader("Preview")
+        st.image(current_preview, use_container_width=True)
+        
+        st.info(f"Shots saved: {len(st.session_state.photos)} / {no_shots}")
+
+        if len(st.session_state.photos) < no_shots:
+            if st.button(f"Save Shot {len(st.session_state.photos) + 1}", use_container_width=True):
+                st.session_state.photos.append(current_preview.copy())
+                st.success("Shot saved successfully!")
+                st.rerun()
+        else:
+            st.warning("You have reached the limit. Scroll down to see your final strip!")
+
+#strip generation
+if len(st.session_state.photos) == no_shots:
+    with st.spinner("Stitching the look..."):
+        photo_bytes = tuple(img_convert(photos) for photos in st.session_state.photos)
+        fin_look = fstrip(
+            photo_bytes,
+            strip_title=strip_title,
+            footer_text=footer_text,
+            template_name=template_name,
+        )
+        
+        st.subheader("Final Look")
+        st.image(fin_look, use_container_width=True)
+        st.success("Behold! Your best angles.")
+        
+        import io
+        st.divider()
+        dl_format = st.radio("Download format", ["PNG", "JPEG"], horizontal=True)
+
+        buf = io.BytesIO()
+        if dl_format == "PNG":
+            file_name = "larawan_sa_mayo.png"
+            mime = "image/png"
+            fin_look.save(buf, format="PNG")
+        else:
+            file_name = "larawan_sa_mayo.jpg"
+            mime = "image/jpeg"
+            if fin_look.mode in ("RGBA", "P"):
+                fin_look = fin_look.convert("RGB")
+            fin_look.save(buf, format="JPEG")
+        
+        file_data = buf.getvalue()
+
+        st.download_button(
+            label=f"Download as {dl_format}",
+            data=file_data, 
+            file_name=file_name,
+            mime=mime,
+            use_container_width=True,
+        )
+else:
+    st.warning(f"Save your {no_shots} best looks to see them all together.")
