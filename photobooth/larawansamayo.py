@@ -290,12 +290,6 @@ def img_convert(image: Image.Image)-> bytes:
     image.save(buffer, format="PNG")
     return buffer.getvalue()
 
-with st.sidebar:
-    st.header("Captured in May")
-    source = st.radio("Which will you use?", ["Camera", "Upload Image"])
-    
-    no_shots = st.number_input("Number of shots", min_value=1, max_value=8, value=4)
-
 #here's the header and sidebar
 #the photobooth main
 page = st.sidebar.selectbox("Go to", ["Photobooth", "About"])
